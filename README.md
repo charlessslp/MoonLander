@@ -8,11 +8,15 @@ Newral link AI Moon Lander, also called Lunar Lander in Gymnasium
 
 
 
-py -3.11 -m venv env\_ML # crea el entorno env\_ML con python 3.11
+\# crea el entorno env\_ML con python 3.11
+
+py -3.11 -m venv env\_ML
 
 
 
-.\\env\_ML\\Scripts\\activate # active el entorno env\_ML
+\# active el entorno env\_ML
+
+.\\env\_ML\\Scripts\\activate
 
 
 
