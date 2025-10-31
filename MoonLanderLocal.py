@@ -36,11 +36,11 @@ print('State size: ', state_size)
 print('Number of actions: ', number_actions)
 
 
-learning_rate = 5e-4            # 0.0005 (don't quite know what this is, also, it seems this magic number was decided after trial and error)
+learning_rate = 5e-4            # 0.0005 (that number to get to the bottom of the curve, if it's too great we can miss the sweet spot, if it's too small it could take forever or even stop in a small outcome, it seems this magic number was decided after trial and error)
 minibatch_size = 100            # the number of observations before updating the model's parameters (good usual size)
 discount_factor = 0.99          # gamma/alpha. small gamma/alpha (0.0001) = short sided (consider only considering current rewards). big gamma/alpha (1) consider future rewards more. For this case, future rewards are important
 replay_buffer_size = int(1e5)   # The memory size of the model (10^5). aka, how many experiences (state + action reward + next state + are we done or not) are in the memory of the agent.
-interpolation_parameter = 1e-3  # don't know
+interpolation_parameter = 1e-3  # Also called "tau" (with a special symbol) Instead of copying all weights from local network to target network, "move them" by a little (this is called soft update): target_weight = tau x local_weight + (1-tau) x target_weight
 
 
 class ReplayMemory(object):
@@ -68,7 +68,7 @@ class ReplayMemory(object):
 
 class Agent():
 
-  def __init__(self, state_size, action_size):
+  def __init__(self, state_size, action_size): # creates the 2 neural networks and the replay memory. Also uses a famous optimization method called Adam and saves the state_size (8) and the action_size (4).
     self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     self.state_size = state_size
     self.action_size = action_size
@@ -78,8 +78,7 @@ class Agent():
     self.replayMemory = ReplayMemory(replay_buffer_size)
     self.time_step = 0
 
-  def step(self, state, action, reward, next_state, done):
-    # self.memory.push((state, action, reward, next_state, done))
+  def step(self, state, action, reward, next_state, done): # Given the event that just happened, save it into memory and, every 4 steps, get a batch of 100 experiences and learn from them.
     event = (state, action, reward, next_state, done)
     self.replayMemory.push(event)
     self.time_step = (self.time_step + 1) % 4
@@ -88,27 +87,27 @@ class Agent():
         experiences = self.replayMemory.sample(minibatch_size)
         self.learn(experiences, discount_factor)
 
-  def act(self, state, epsilon = 0.):
+  def act(self, state, epsilon = 0.): # Given an state, calculates the Q-Values of the 4 possible actions. Epsilon is meant for e-greedy, so it sometimes do a random action instead.
     state = torch.from_numpy(state).float().unsqueeze(0).to(self.device)
-    self.local_qnetwork.eval()
-    with torch.no_grad():
-      action_values = self.local_qnetwork(state)
-    self.local_qnetwork.train()
+    self.local_qnetwork.eval()                                      # puts network in evaluation mode, without gradients
+    with torch.no_grad():                                           # this is to make calculations faster
+      action_values = self.local_qnetwork(state)                    # calls forward() (see beginning of file) and gets the 4 Q-Values of the 4 possible actions
+    self.local_qnetwork.train()                                     # sets it back to train mode
     if random.random() > epsilon:
-      return np.argmax(action_values.cpu().data.numpy())
+      return np.argmax(action_values.cpu().data.numpy())            # takes the action with higher Q-Value (Explotation)
     else:
-      return random.choice(np.arange(self.action_size))
+      return random.choice(np.arange(self.action_size))             # takes a totally random action (Exploration)
 
-  def learn(self, experiences, discount_factor):
-    states, next_states, actions, rewards, dones = experiences
-    next_q_targets = self.target_qnetwork(next_states).detach().max(1)[0].unsqueeze(1)
-    q_targets = rewards + (discount_factor * next_q_targets * (1 - dones))
-    q_expected = self.local_qnetwork(states).gather(1, actions)
-    loss = F.mse_loss(q_expected, q_targets)
-    self.optimizer.zero_grad()
+  def learn(self, experiences, discount_factor): # Given a batch of experiences (see step method) 
+    states, next_states, actions, rewards, dones = experiences                              # separates the experiences in different arrays
+    next_q_targets = self.target_qnetwork(next_states).detach().max(1)[0].unsqueeze(1)      # Get the Q values of the network using the next states.
+    q_targets = rewards + (discount_factor * next_q_targets * (1 - dones))                  # Bellman's equation: calculation of the actual Q-Target based on the reward + the Q-value we had stored (we don't want to substitute it with reward but update it a bit)
+    q_expected = self.local_qnetwork(states).gather(1, actions)                             # get the Q-Values expected from this state 
+    loss = F.mse_loss(q_expected, q_targets)                                                # the loss is the difference between the actual q-value of the next state (based on reward) minus the Q-Value we thought we would get
+    self.optimizer.zero_grad()                                                              # Back propagation using the "Adam" optimization.
     loss.backward()
     self.optimizer.step()
-    self.soft_update(self.local_qnetwork, self.target_qnetwork, interpolation_parameter)
+    self.soft_update(self.local_qnetwork, self.target_qnetwork, interpolation_parameter)    # update the target network using soft update
 
   def soft_update(self, local_model, target_model, interpolation_parameter):
     for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
