@@ -21,6 +21,7 @@ py -3.11 -m venv env_ML
 python.exe -m pip install --upgrade pip pip install numpy  
 
 // go to https://pytorch.org/get-started/locally/ in order to know the specific pytorch best for your system. Update your NVIDIA drivers for it to work too.
+
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 
 pip install imageio
