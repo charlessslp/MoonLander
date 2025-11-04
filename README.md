@@ -34,5 +34,7 @@ pip install imageio[pyav]
 
 pip install gymnasium[Box2d]
 
-//pip install imageio && pip install IPython && pip install imageio[ffmpeg] && pip install imageio[pyav] && pip install gymnasium[Box2d]
+// in case you want to install the last ones all at once:
+
+// pip install imageio && pip install IPython && pip install imageio[ffmpeg] && pip install imageio[pyav] && pip install gymnasium[Box2d]
 
