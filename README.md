@@ -24,8 +24,11 @@ python.exe -m pip install --upgrade pip pip install numpy
 pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 
 pip install imageio
+
 pip install IPython
+
 pip install imageio[ffmpeg]
+
 pip install imageio[pyav]
 
 pip install gymnasium[Box2d]
