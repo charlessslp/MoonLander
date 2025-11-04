@@ -2,36 +2,33 @@
 
 Newral link AI Moon Lander, also called Lunar Lander in Gymnasium
 
+//IMPORTANT: In initialize.bat, change "set PATH..." to point to the swigwin folder. If not in repo, download the swingin folder from https://swig.org/.
 
-
-//IMPORTANTE: Recuerda descargar tambien la carpeta swigwin desde https://swig.org/. Luego, en el initialize.bat, cambia el "set PATH..." a la ruta donde este la carpeta swigwin descargada
-
-
-
-//instala py 3.11 si no lo tienes
+//install py 3.11 if not existing
 
 py install 3.11
 
-//crea el entorno env\_ML con python 3.11
+//create the new venv with python 3.11
 
-py -3.11 -m venv env\_ML
+py -3.11 -m venv env_ML
 
-//activa el entorno env\_ML
+//activates the enviroment
 
-.\\env\_ML\\Scripts\\activate
+.\env_ML\Scripts\activate
 
+//installers:
 
+python.exe -m pip install --upgrade pip pip install numpy  
 
-instaladores:
-
-python.exe -m pip install --upgrade pip
-pip install numpy
-pip install torch
+// go to https://pytorch.org/get-started/locally/ in order to know the specific pytorch best for your system. Update your NVIDIA drivers for it to work too.
+pip3 install torch torchvision --index-url https://download.pytorch.org/whl/cu126
 
 pip install imageio
 pip install IPython
-pip install imageio\[ffmpeg]
-pip install imageio\[pyav]
+pip install imageio[ffmpeg]
+pip install imageio[pyav]
 
-pip install gymnasium\[box2d]
+pip install gymnasium[Box2d]
+
+//pip install imageio && pip install IPython && pip install imageio[ffmpeg] && pip install imageio[pyav] && pip install gymnasium[Box2d]
 
